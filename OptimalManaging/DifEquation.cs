@@ -231,8 +231,36 @@ namespace OptimalManaging
         }
 
 
+        public static Matrix ConditionalGradientByF(Matrix f_old, Matrix KSI, double alpha, double R, double h, double tau)
+        {
+            int N = f_old.Length.n;
+            int M = f_old.Length.m;
 
+            double NORM = 0;
+            Matrix KSI2 = new Matrix(N, M);
+            Matrix f_new = new Matrix(N, M);
 
+            for (int i = 0; i < N; i++)
+            {
+                for (int j = 0; j < M; j++)
+                {
+                    KSI2[i, j] = Math.Pow(Math.Abs(KSI[i, j]), 2);
+                }
+            }
+            NORM = Math.Sqrt(MyMath.IntegrateSurface(KSI2, tau, h));
+
+            double f_prime = 0;
+            for (int i = 0; i < N; i++)
+            {
+                for (int j = 0; j < M; j++)
+                {
+                    f_prime = -R * KSI[i, j] / NORM;
+                    f_new[i, j] = f_old[i, j] + alpha * (f_prime - f_old[i, j]);
+                }
+            }
+
+            return f_new;
+        }
 
     }
 }

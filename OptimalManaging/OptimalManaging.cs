@@ -32,7 +32,7 @@ namespace OptimalManaging
         public Vector calc_u_old;
         double P_MIN, P_MAX;
         double R;
-        double alpha_old;
+        public double alpha_old;
 
 
 
@@ -160,13 +160,17 @@ namespace OptimalManaging
                     manage_f[i, j] = f(h * j, tau * i);
                 }
             }
+
+            //Vector temp = MyMath.GetVectorFunction(GRID_SIZE, 0d, LengthVal, y);
+            //R = MyMath.TrapezoidMethod(temp, h);
+           
         }
         public double ChooseAlpha_LipMethod()
         {
             double e1 = EPS1;
             double e2 = 2d / (LIP + 2d * EPS2);
             Random random = new Random();
-            double t = random.NextDouble();
+            double t = 0.5d;//random.NextDouble();
 
             return t * e1 + (1d - t) * e2;
         }
@@ -182,7 +186,7 @@ namespace OptimalManaging
                 return alpha / 2d;
             else return alpha;
 
-           
+            //Console.WriteLine( "alpha = " + alpha );  
         }
 
         public double Functional_J(Vector calc_u)
@@ -233,8 +237,8 @@ namespace OptimalManaging
             double h = MyMath.GetStep(GRID_SIZE, 0d, L);
 
 
-            manage_p = DifferentialEquation.GrdientProjection(manage_p, ksi_l,alpha, aa,P_MIN,P_MAX);
-            manage_f = DifferentialEquation.GrdientProjectionByF(manage_f, KSI, alpha, R, h, tau);
+            //manage_p = DifferentialEquation.GrdientProjection(manage_p, ksi_l,alpha, aa,P_MIN,P_MAX);
+            manage_f = DifferentialEquation.ConditionalGradientByF(manage_f, KSI, alpha, R, h, tau);
             ITERATION++;
             calc_u_old = calc_u;
             alpha_old = alpha;

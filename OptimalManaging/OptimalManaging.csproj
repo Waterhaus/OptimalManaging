@@ -60,6 +60,7 @@
     </Compile>
     <Compile Include="FunctionStore.cs" />
     <Compile Include="Matrix.cs" />
+    <Compile Include="MyColor.cs" />
     <Compile Include="MyMath.cs" />
     <Compile Include="OptimalManaging.cs" />
     <Compile Include="Program.cs" />

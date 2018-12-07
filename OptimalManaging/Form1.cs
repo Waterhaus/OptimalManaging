@@ -8,8 +8,14 @@ namespace OptimalManaging
     {
         OptimalManaging optm;
         int GRID_SIZE = 100;
-        int TIME_SIZE = 1000;
+        int TIME_SIZE = 100;
+        int Iter = 0;
         Vector y,x,tau,u_old;
+
+
+        //--------------------
+        double R = 1;
+        double a = 1;
         public Form1()
         {
             InitializeComponent();
@@ -35,7 +41,7 @@ namespace OptimalManaging
 
             public static double f(double x, double t)
             {
-                return 2;
+                return -2d;
             }
 
             public static double p(double t)
@@ -100,33 +106,56 @@ namespace OptimalManaging
                 ITER++;
             }
             calc_p = optm.CalculateIteration();
-            label1.Text = "J = " + J + Environment.NewLine;
+            label1.Text = "Информация " + Environment.NewLine;
+            label1.Text += "J = " + J + Environment.NewLine;
             label1.Text += "||u - u_old|| = " + (u_old - optm.calc_u).Norm + Environment.NewLine;
-            label1.Text += " ВСЕГО ИТЕРАЦИЙ: " + ITER;
+            label1.Text += "Количество итераций: " + ITER;
 
 
             DrawOM.Draw(chart1, x, optm.calc_u, 1);
-            DrawOM.Draw(chart2, tau, calc_p, 0);
+            DrawOM.DrawHeatMap(chart2, optm.manage_f, 0);
         }
 
         private void trackBar1_Scroll(object sender, EventArgs e)
         {
-            label2.Text = "a^2 = " + (double)(trackBar1.Value) / 11d;
-            TestFunction1.aa = (double)(trackBar1.Value) / 11d;
-            Reload();
         }
 
         private void checkBox1_CheckedChanged(object sender, EventArgs e)
         {
-            if (checkBox1.Checked)
-            {
-                Reload();
-                optm.pickAlpha = PickAlpha.Divide;
-            }else
-            {
-                Reload();
-                optm.pickAlpha = PickAlpha.Lagrange;
-            }
+            
+        }
+
+        private void radioButton5_CheckedChanged(object sender, EventArgs e)
+        {
+            Reload();
+            optm.pickAlpha = PickAlpha.Lagrange;
+        }
+
+        private void radioButton6_CheckedChanged(object sender, EventArgs e)
+        {
+        }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            R = Double.Parse( textBox1.Text );
+            a = Double.Parse(textBox4.Text);
+            GRID_SIZE = Int32.Parse(textBox3.Text);
+            TIME_SIZE = Int32.Parse(textBox2.Text);
+            Reload();
+        }
+
+        private void radioButton6_CheckedChanged_1(object sender, EventArgs e)
+        {
+            Reload();
+            optm.pickAlpha = PickAlpha.Divide;
+
+        }
+
+        private void radioButton5_CheckedChanged_1(object sender, EventArgs e)
+        {
+            Reload();
+            optm.pickAlpha = PickAlpha.Lagrange;
+
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -138,34 +167,39 @@ namespace OptimalManaging
                 calc_p = optm.CalculateIteration();
 
             }
-
-            DrawOM.Draw(chart1, x, optm.calc_u, 1);
-            DrawOM.Draw(chart2, tau, calc_p, 0);
-
-             
-            double J = optm.Functional_J(optm.calc_u);
-            label1.Text = "J = " + J;
             
+            DrawOM.Draw(chart1, x, optm.calc_u, 1);
+            //DrawOM.Draw(chart2, tau, calc_p, 0);
+            DrawOM.DrawHeatMap(chart2, optm.manage_f, 0);
+            Iter++;
+            double J = optm.Functional_J(optm.calc_u);
+            label1.Text = "Информация " + Environment.NewLine;
+            label1.Text += "J(u_"+Iter+") = " + J + Environment.NewLine;
+            label1.Text += "||u - u_old|| = " + (u_old - optm.calc_u).Norm + Environment.NewLine;
+            label1.Text += "Итерация: " + Iter + Environment.NewLine;
+            label1.Text += "alpha = " + optm.alpha_old;
+            u_old = optm.calc_u;
 
-            }
+        }
 
 
         private void Reload()
         {
-            optm = new OptimalManaging(1d, 1d, TestFunction1.aa, 1d, TIME_SIZE, GRID_SIZE, 0.1, 0.1,
-    TestFunction1.y, TestFunction1.p, TestFunction1.phi, TestFunction1.f, -100, 100, 50);
+            optm = new OptimalManaging(1d, 1d, a, 1d, TIME_SIZE, GRID_SIZE, 0.1, 0.1,
+    TestFunction1.y, TestFunction1.p, TestFunction1.phi, TestFunction1.f, -100, 100, R);
             DrawOM.SetNSeries(chart1, 2);
-            DrawOM.SetNSeries(chart2, 1);
+            DrawOM.SetHeatMap(chart2);
             y = MyMath.GetVectorFunction(GRID_SIZE, 0, 1d, TestFunction1.y);
             u_old = new Vector(GRID_SIZE);
             x = new Vector(MyMath.CreateUniformGrid(GRID_SIZE, 0, 1d));
 
             tau = new Vector(MyMath.CreateUniformGrid(TIME_SIZE, 0, 1d));
-
+            Iter = 0;
             DrawOM.Draw(chart1, x, y, 0);
         }
         private void Form1_Load(object sender, EventArgs e)
         {
+            radioButton5.Checked = true;
             Reload();
 
 
