@@ -11,10 +11,10 @@ namespace OptimalManaging
         int TIME_SIZE = 100;
         int Iter = 0;
         Vector y,x,tau,u_old;
-
+        PickAlpha pick;
 
         //--------------------
-        double R = 1;
+        double R = 7;
         double a = 1;
         public Form1()
         {
@@ -127,8 +127,9 @@ namespace OptimalManaging
 
         private void radioButton5_CheckedChanged(object sender, EventArgs e)
         {
+            pick = PickAlpha.Lagrange;
             Reload();
-            optm.pickAlpha = PickAlpha.Lagrange;
+            //optm.pickAlpha = PickAlpha.Lagrange;
         }
 
         private void radioButton6_CheckedChanged(object sender, EventArgs e)
@@ -146,6 +147,7 @@ namespace OptimalManaging
 
         private void radioButton6_CheckedChanged_1(object sender, EventArgs e)
         {
+            pick = PickAlpha.Divide;
             Reload();
             optm.pickAlpha = PickAlpha.Divide;
 
@@ -153,6 +155,7 @@ namespace OptimalManaging
 
         private void radioButton5_CheckedChanged_1(object sender, EventArgs e)
         {
+            pick = PickAlpha.Lagrange;
             Reload();
             optm.pickAlpha = PickAlpha.Lagrange;
 
@@ -187,6 +190,7 @@ namespace OptimalManaging
         {
             optm = new OptimalManaging(1d, 1d, a, 1d, TIME_SIZE, GRID_SIZE, 0.1, 0.1,
     TestFunction1.y, TestFunction1.p, TestFunction1.phi, TestFunction1.f, -100, 100, R);
+            optm.pickAlpha = pick;
             DrawOM.SetNSeries(chart1, 2);
             DrawOM.SetHeatMap(chart2);
             y = MyMath.GetVectorFunction(GRID_SIZE, 0, 1d, TestFunction1.y);
@@ -202,7 +206,10 @@ namespace OptimalManaging
             radioButton5.Checked = true;
             Reload();
 
+            chart2.ChartAreas["ChartArea1"].AxisX.LabelStyle.Enabled = false;
+            chart2.ChartAreas["ChartArea1"].AxisY.LabelStyle.Enabled = false;
 
+            chart1.ChartAreas["ChartArea1"].AxisX.LabelStyle.Enabled = false;
         }
     }
  }
