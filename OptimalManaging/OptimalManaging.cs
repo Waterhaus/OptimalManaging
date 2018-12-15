@@ -3,7 +3,7 @@ using System.Windows.Forms;
 namespace OptimalManaging
 {
 
-    public enum PickAlpha { Lipshiz, Divide , Lipshiz_CG};
+    public enum PickAlpha { Lipshiz, Divide , Lipshiz_CG, SUM, Projection};
     public class OptimalManaging
     {
         public PickAlpha pickAlpha = PickAlpha.Lipshiz;
@@ -178,7 +178,52 @@ namespace OptimalManaging
 
             return t * e1 + (1d - t) * e2;
         }
+        public double ChooseAlpha_Sum()
+        {
+            
+            return 2d/(ITERATION + 1);
+        }
 
+        double Calculate_L2NORM(Matrix f, double h, double tau)
+        {
+            int N = f.Length.n;
+            int M = f.Length.m;
+
+            double NORM = 0;
+           
+            Matrix f2 = new Matrix(N, M);
+            for (int i = 0; i < N; i++)
+            {
+                for (int j = 0; j < M; j++)
+                {
+                    f2[i, j] = Math.Pow(Math.Abs(f[i, j]), 2);
+                }
+            }
+            NORM = Math.Sqrt(MyMath.IntegrateSurface(f2, tau, h));
+            return NORM;
+
+        }
+
+        public double ChooseAlpha_Projection(Matrix KSI, Matrix f, double alpha, double R, double tau, double h)
+        {
+            Vector u_temp = new Vector();
+            double EPS = 0.001d;
+            double NORM = 0;
+            do {
+                Matrix f_new = DifferentialEquation.GrdientProjectionByF(f, KSI, alpha, R, h, tau);
+                f_new = Pu(f_new, R, h, tau);
+
+                u_temp = DifferentialEquation.GetSolutionTask1(manage_p, f_new, phi, nu, L, T, aa, GRID_SIZE, TIME_SIZE);
+
+
+                NORM = Calculate_L2NORM(f - f_new, h, tau);
+                alpha = alpha / 2.0;
+
+
+            } while (Functional_J(calc_u) - Functional_J(u_temp) < EPS*NORM*NORM );
+
+            return alpha * 2.0;
+        }
         public double ChooseAplpha_LipMethodForConditionalGradient(Matrix KSI, Matrix f,double alpha, double tau, double h)
         {
             double rho = ChooseAlpha_LipMethod();
@@ -239,11 +284,47 @@ namespace OptimalManaging
 
             for (int i = 0; i < GRID_SIZE; i++)
             {
-                err[i] = (calc_u[i] - y(h * i))* (calc_u[i] - y(h * i));
+                err[i] = (calc_u[i] - y(h * i)) * (calc_u[i] - y(h * i));
             }
 
 
             return MyMath.RiemannSum(err.ToArray, h);
+
+        }
+
+
+
+        public Matrix Pu(Matrix f,double R, double h, double tau)
+        {
+            int N = f.Length.n;
+            int M = f.Length.m;
+
+            double NORM = 0;
+            Matrix f2 = new Matrix(N, M);
+            for (int i = 0; i < N; i++)
+            {
+                for (int j = 0; j < M; j++)
+                {
+                    f2[i, j] = Math.Pow(Math.Abs(f[i, j]), 2);
+                }
+            }
+            NORM = Math.Sqrt(MyMath.IntegrateSurface(f2, tau, h));
+
+
+            if (NORM < R)
+            {
+                return f;
+            }else
+            {
+                for (int i = 0; i < N; i++)
+                {
+                    for (int j = 0; j < M; j++)
+                    {
+                        f2[i, j] = R*f[i, j] / NORM;
+                    }
+                }
+                return f2;
+            }
 
         }
 
@@ -281,6 +362,12 @@ namespace OptimalManaging
                         alpha = ChooseAplpha_LipMethodForConditionalGradient(KSI, manage_f,alpha, tau, h);
                     //alpha = 1d / (ITERATION + 1);
                     break;
+                case PickAlpha.SUM:
+                    alpha = ChooseAlpha_Sum();
+                    break;
+                case PickAlpha.Projection:
+                    alpha = ChooseAlpha_Projection(KSI, manage_f, alpha,R,tau,h);
+                    break;
                 default:
                     break;
             }
@@ -289,7 +376,7 @@ namespace OptimalManaging
            
 
             //manage_p = DifferentialEquation.GrdientProjection(manage_p, ksi_l,alpha, aa,P_MIN,P_MAX);
-            manage_f = DifferentialEquation.ConditionalGradientByF(manage_f, KSI, alpha, R, h, tau);
+            manage_f = DifferentialEquation.GrdientProjectionByF(manage_f, KSI, alpha, R, h, tau);
             ITERATION++;
             calc_u_old = calc_u;
             alpha_old = alpha;

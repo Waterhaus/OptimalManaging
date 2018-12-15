@@ -161,6 +161,21 @@ namespace OptimalManaging
 
         }
 
+        private void radioButton7_CheckedChanged(object sender, EventArgs e)
+        {
+            pick = PickAlpha.SUM;
+            Reload();
+            optm.pickAlpha = PickAlpha.SUM;
+        }
+
+        private void radioButton8_CheckedChanged(object sender, EventArgs e)
+        {
+
+            pick = PickAlpha.Projection;
+            Reload();
+            optm.pickAlpha = PickAlpha.Projection;
+        }
+
         private void button1_Click(object sender, EventArgs e)
         {
 
