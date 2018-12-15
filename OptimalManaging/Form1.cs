@@ -127,7 +127,7 @@ namespace OptimalManaging
 
         private void radioButton5_CheckedChanged(object sender, EventArgs e)
         {
-            pick = PickAlpha.Lagrange;
+            pick = PickAlpha.Lipshiz;
             Reload();
             //optm.pickAlpha = PickAlpha.Lagrange;
         }
@@ -155,9 +155,9 @@ namespace OptimalManaging
 
         private void radioButton5_CheckedChanged_1(object sender, EventArgs e)
         {
-            pick = PickAlpha.Lagrange;
+            pick = PickAlpha.Lipshiz_CG;
             Reload();
-            optm.pickAlpha = PickAlpha.Lagrange;
+            optm.pickAlpha = PickAlpha.Lipshiz_CG;
 
         }
 

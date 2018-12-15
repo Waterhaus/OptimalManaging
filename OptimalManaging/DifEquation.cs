@@ -231,6 +231,28 @@ namespace OptimalManaging
         }
 
 
+        public static double dJ_f(Matrix KSI, Matrix f, double h, double tau)
+        {
+            int N = f.Length.n;
+            int M = f.Length.m;
+
+            double I = 0;
+            Matrix KSI2 = new Matrix(N, M);
+            
+            for (int i = 0; i < N; i++)
+            {
+                for (int j = 0; j < M; j++)
+                {
+                    KSI2[i, j] = KSI[i, j]*f[i,j];
+                }
+            }
+            I = MyMath.IntegrateSurface(KSI2, tau, h);
+
+            return Math.Abs(I);
+        }
+
+
+
         public static Matrix ConditionalGradientByF(Matrix f_old, Matrix KSI, double alpha, double R, double h, double tau)
         {
             int N = f_old.Length.n;
@@ -249,18 +271,23 @@ namespace OptimalManaging
             }
             NORM = Math.Sqrt(MyMath.IntegrateSurface(KSI2, tau, h));
 
-            double f_prime = 0;
+            double f_prime = 0; 
             for (int i = 0; i < N; i++)
             {
                 for (int j = 0; j < M; j++)
                 {
+                    //R = 10;
                     f_prime = -R * KSI[i, j] / NORM;
-                    f_new[i, j] = f_old[i, j] + alpha * (f_prime - f_old[i, j]);
+                    
+                    f_new[i, j] = (1d - alpha)*f_old[i, j] + alpha * f_prime;
                 }
             }
 
             return f_new;
         }
+
+
+
 
     }
 }

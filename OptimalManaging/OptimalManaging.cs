@@ -1,12 +1,12 @@
 ﻿using System;
-
+using System.Windows.Forms;
 namespace OptimalManaging
 {
 
-    public enum PickAlpha { Lagrange, Divide };
+    public enum PickAlpha { Lipshiz, Divide , Lipshiz_CG};
     public class OptimalManaging
     {
-        public PickAlpha pickAlpha = PickAlpha.Lagrange;
+        public PickAlpha pickAlpha = PickAlpha.Lipshiz;
         private double L;
         private double T;
         private double aa;
@@ -165,6 +165,10 @@ namespace OptimalManaging
             //R = MyMath.TrapezoidMethod(temp, h);
            
         }
+        double min(double a, double b)
+        {
+            if (a < b) return a; else return b;
+        }
         public double ChooseAlpha_LipMethod()
         {
             double e1 = EPS1;
@@ -173,6 +177,44 @@ namespace OptimalManaging
             double t = 0.5d;//random.NextDouble();
 
             return t * e1 + (1d - t) * e2;
+        }
+
+        public double ChooseAplpha_LipMethodForConditionalGradient(Matrix KSI, Matrix f,double alpha, double tau, double h)
+        {
+            double rho = ChooseAlpha_LipMethod();
+            int N = f.Length.n;
+            int M = f.Length.m;
+
+            double NORM = 0;
+            Matrix KSI2 = new Matrix(N, M);
+            Matrix f2 = new Matrix(N, M);
+            for (int i = 0; i < N; i++)
+            {
+                for (int j = 0; j < M; j++)
+                {
+                    KSI2[i, j] = Math.Pow(Math.Abs(KSI[i, j]), 2);
+                }
+            }
+            NORM = Math.Sqrt(MyMath.IntegrateSurface(KSI2, tau, h));
+
+            double f_prime = 0,  temp = 0;
+            for (int i = 0; i < N; i++)
+            {
+                for (int j = 0; j < M; j++)
+                {
+                    //R = 10;
+                    f_prime = -R * KSI[i, j]/NORM;
+                    temp = f_prime - f[i, j];
+                    f2[i, j] = temp * temp;
+                }
+            }
+
+            NORM = MyMath.IntegrateSurface(f2, tau, h);
+            double dJ = DifferentialEquation.dJ_f(KSI, f, h, tau);
+            //MessageBox.Show("dJ = " + dJ + " NORM = " + NORM);
+            return min(1d, rho*dJ/(NORM));
+
+
         }
 
         public double ChooseAlpha_DivideMethod(double alpha)
@@ -205,6 +247,10 @@ namespace OptimalManaging
 
         }
 
+
+
+
+
         public Vector CalculateIteration()
         {
             calc_u = DifferentialEquation.GetSolutionTask1(manage_p, manage_f, phi, nu, L, T, aa, GRID_SIZE, TIME_SIZE);
@@ -218,24 +264,29 @@ namespace OptimalManaging
             }
             double alpha = alpha_old;
 
+            double tau = MyMath.GetStep(TIME_SIZE, 0d, T);
+            double h = MyMath.GetStep(GRID_SIZE, 0d, L);
 
             switch (pickAlpha)
             {
-                case PickAlpha.Lagrange:
+                case PickAlpha.Lipshiz:
                     alpha = ChooseAlpha_LipMethod();
                     break;
                 case PickAlpha.Divide:
                     if (ITERATION > 0)
                         alpha = ChooseAlpha_DivideMethod(alpha_old);
                     break;
+                case PickAlpha.Lipshiz_CG:
+                    if (ITERATION > 0)
+                        alpha = ChooseAplpha_LipMethodForConditionalGradient(KSI, manage_f,alpha, tau, h);
+                    //alpha = 1d / (ITERATION + 1);
+                    break;
                 default:
                     break;
             }
 
             
-            double tau = MyMath.GetStep(TIME_SIZE, 0d, T);
-            double h = MyMath.GetStep(GRID_SIZE, 0d, L);
-
+           
 
             //manage_p = DifferentialEquation.GrdientProjection(manage_p, ksi_l,alpha, aa,P_MIN,P_MAX);
             manage_f = DifferentialEquation.ConditionalGradientByF(manage_f, KSI, alpha, R, h, tau);
