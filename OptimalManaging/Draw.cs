@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using MyMathLib;
+//using MyMathLib;
 using System.Windows.Forms;
 using System.Windows.Forms.DataVisualization.Charting;
 

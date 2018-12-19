@@ -375,8 +375,8 @@ namespace OptimalManaging
             
            
 
-            //manage_p = DifferentialEquation.GrdientProjection(manage_p, ksi_l,alpha, aa,P_MIN,P_MAX);
-            manage_f = DifferentialEquation.GrdientProjectionByF(manage_f, KSI, alpha, R, h, tau);
+            manage_p = DifferentialEquation.GrdientProjection(manage_p, ksi_l,alpha, aa,P_MIN,P_MAX);
+            //manage_f = DifferentialEquation.GrdientProjectionByF(manage_f, KSI, alpha, R, h, tau);
             ITERATION++;
             calc_u_old = calc_u;
             alpha_old = alpha;

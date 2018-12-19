@@ -218,7 +218,7 @@ namespace OptimalManaging
         }
         private void Form1_Load(object sender, EventArgs e)
         {
-            radioButton5.Checked = true;
+            radioButton7.Checked = true;
             Reload();
 
             chart2.ChartAreas["ChartArea1"].AxisX.LabelStyle.Enabled = false;
